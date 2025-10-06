@@ -1,0 +1,6 @@
+Hello world
+This is a test string
+Another line of text
+Some more input data
+The last string before dot
+.

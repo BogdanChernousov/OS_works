@@ -1,0 +1,18 @@
+SCP FOUNDATION - CLASSIFIED
+
+Object: SCP-735-NSU
+Class: Euclid
+
+Containment Procedures:
+- Access restricted to Level 3 personnel
+- Must not be observed by D-class
+- Subject exhibits memetic properties
+
+Description:
+Anomalous computing artifact capable of
+modifying user identity permissions.
+Believed to be of extradimensional origin.
+
+Addendum 735-1:
+Subject responds to setuid manipulation.
+Further testing authorized by O5 Council.

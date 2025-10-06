@@ -1,0 +1,132 @@
+/ 1. Создание файла и настройка прав доступа
+// bash
+
+// # Создаем тестовый файл
+// echo "This is a secure file" > secure_file.txt
+
+// # Устанавливаем права доступа 600 (только владелец может читать/писать)
+// chmod 600 secure_file.txt
+
+// # Проверяем права доступа
+// ls -l secure_file.txt
+
+// 2. Компиляция программы
+// bash
+
+// gcc -o file_access file_access.c
+
+// 3. Первый запуск (обычный пользователь)
+// bash
+
+// ./file_access
+
+// Ожидаемый вывод:
+// text
+
+// === STEP 1: Initial state ===
+// Real user ID: 1000
+// Effective user ID: 1000
+
+// === STEP 2: Trying to open file ===
+// Attempting to open file: secure_file.txt
+// File opened successfully
+
+// === STEP 3: Setting effective UID to real UID ===
+// After setuid():
+// Real user ID: 1000
+// Effective user ID: 1000
+
+// === STEP 4: Trying to open file again ===
+// Attempting to open file: secure_file.txt
+// File opened successfully
+
+// === SUMMARY ===
+// First attempt: SUCCESS
+// Second attempt: SUCCESS
+
+// 4. Предоставление доступа группе
+// bash
+
+// # Даем право выполнения программы членам группы
+// chmod g+x file_access
+
+// # Проверяем права доступа
+// ls -l file_access
+
+// 5. Тестирование одногруппниками
+
+// Пусть одногруппник выполнит:
+// bash
+
+// ./file_access
+
+// Ожидаемый вывод (у одногруппника):
+// text
+
+// === STEP 1: Initial state ===
+// Real user ID: 1001
+// Effective user ID: 1001
+
+// === STEP 2: Trying to open file ===
+// Attempting to open file: secure_file.txt
+// fopen failed: Permission denied
+
+// === STEP 3: Setting effective UID to real UID ===
+// After setuid():
+// Real user ID: 1001
+// Effective user ID: 1001
+
+// === STEP 4: Trying to open file again ===
+// Attempting to open file: secure_file.txt
+// fopen failed: Permission denied
+
+// === SUMMARY ===
+// First attempt: FAILED
+// Second attempt: FAILED
+
+// 6. Установка бита setuid
+// bash
+
+// # Устанавливаем бит setuid
+// chmod u+s file_access
+
+// # Проверяем права доступа (должен появиться 's' вместо 'x' у владельца)
+// ls -l file_access
+
+// 7. Повторное тестирование одногруппниками
+
+// После установки бита setuid, когда одногруппник запускает программу:
+
+// Ожидаемый вывод:
+// text
+
+// === STEP 1: Initial state ===
+// Real user ID: 1001
+// Effective user ID: 1000
+
+// === STEP 2: Trying to open file ===
+// Attempting to open file: secure_file.txt
+// File opened successfully
+
+// === STEP 3: Setting effective UID to real UID ===
+// After setuid():
+// Real user ID: 1001
+// Effective user ID: 1001
+
+// === STEP 4: Trying to open file again ===
+// Attempting to open file: secure_file.txt
+// fopen failed: Permission denied
+
+// === SUMMARY ===
+// First attempt: SUCCESS
+// Second attempt: FAILED
+
+// Объяснение работы программы:
+
+//     Без setuid бита: программа выполняется с правами запустившего пользователя
+
+//     С setuid битом: программа выполняется с правами владельца файла
+
+//     setuid(real_uid): сбрасывает эффективный UID обратно к реальному UID
+
+//     fopen(): проверяет права доступа на основе эффективного UID
