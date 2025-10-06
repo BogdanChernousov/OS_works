@@ -1,0 +1,120 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/select.h>
+
+#define MAX_LINES 1000
+#define TIMEOUT 5
+
+int main(int argc, char *argv[]){
+    if (argc != 2)
+    {
+        fprintf(stderr, "Использование: %s <файл>\n", argv[0]);
+        return 1;
+    }
+
+    int fd = open(argv[1], O_RDONLY);
+    if (fd == -1)
+    {
+        perror("Ошибка открытия файла");
+        return 1;
+    }
+
+    // Строим таблицу строк
+    long offsets[MAX_LINES];
+    int lengths[MAX_LINES];
+    int line_count = 0;
+    
+    offsets[0] = 0;
+    char buffer[1024];
+    ssize_t bytes_read;
+    long current_pos = 0;
+    int line_length = 0;
+
+    while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0)
+    {
+        for (int i = 0; i < bytes_read; i++)
+        {
+            line_length++;
+            
+            if (buffer[i] == '\n')
+            {
+                lengths[line_count] = line_length;
+                line_count++;
+                offsets[line_count] = current_pos + i + 1;
+                line_length = 0;
+                
+                if (line_count >= MAX_LINES - 1) break;
+            }
+        }
+        current_pos += bytes_read;
+    }
+
+    if (line_length > 0)
+    {
+        lengths[line_count] = line_length;
+        line_count++;
+    }
+
+    printf("Файл '%s' содержит %d строк\n", argv[1], line_count);
+    printf("У вас %d секунд чтобы ввести номер строки: ", TIMEOUT);
+    fflush(stdout);
+
+    // Используем select для таймаута ввода
+    fd_set readfds;
+    struct timeval timeout;
+    
+    FD_ZERO(&readfds);
+    FD_SET(STDIN_FILENO, &readfds);
+    timeout.tv_sec = TIMEOUT;
+    timeout.tv_usec = 0;
+
+    int result = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &timeout);
+
+    if (result > 0)
+    {
+        // Пользователь успел ввести
+        int line_num;
+        if (scanf("%d", &line_num) == 1)
+        {
+            if (line_num == 0)
+            {
+                printf("Завершение работы\n");
+            }
+            else if (line_num >= 1 && line_num <= line_count)
+            {
+                lseek(fd, offsets[line_num - 1], SEEK_SET);
+                char line[lengths[line_num - 1] + 1];
+                read(fd, line, lengths[line_num - 1]);
+                line[lengths[line_num - 1]] = '\0';
+                printf("Строка %d: %s\n", line_num, line);
+            }
+            else
+            {
+                printf("Ошибка: неверный номер строки\n");
+            }
+        }
+    }
+    else if (result == 0)
+    {
+        // Таймаут - время вышло
+        printf("\nВремя вышло! Вывод всего файла:\n");
+        printf("================================\n");
+        
+        lseek(fd, 0, SEEK_SET);
+        while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            write(STDOUT_FILENO, buffer, bytes_read);
+        }
+        printf("\n================================\n");
+    }
+    else
+    {
+        perror("Ошибка select");
+    }
+
+    close(fd);
+    return 0;
+}

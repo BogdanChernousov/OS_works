@@ -77,4 +77,3 @@ int main(){
 
 
 // sudo -u test_user /home/bogdan-chernousov/Documents/C_OS/C_Projects/3_task/file_access
-// 
