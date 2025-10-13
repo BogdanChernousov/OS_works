@@ -59,6 +59,37 @@ int main(int argc, char *argv[]){
     }
 
     printf("Файл '%s' содержит %d строк\n", argv[1], line_count);
+
+    // ВЫВОД ТАБЛИЦЫ ОТСТУПОВ С СОДЕРЖАНИЕМ
+    printf("\n=== ТАБЛИЦА СТРОК ===\n");
+    printf("№ строки | Смещение | Длина | Содержимое\n");
+    printf("---------|----------|-------|------------\n");
+    
+    // Сохраняем текущую позицию в файле
+    long saved_pos = lseek(fd, 0L, SEEK_CUR);
+    
+    for (int i = 0; i < line_count; i++)
+    {
+        // Перемещаемся к строке и читаем её для отображения
+        lseek(fd, offsets[i], SEEK_SET);
+        char line_content[lengths[i] + 1];
+        read(fd, line_content, lengths[i]);
+        line_content[lengths[i]] = '\0';
+        
+        // Убираем символ новой строки из отображения
+        if (line_content[lengths[i] - 1] == '\n') {
+            line_content[lengths[i] - 1] = '\0';
+        }
+        
+        printf("%8d | %8ld | %5d | '%s'\n", 
+               i + 1, offsets[i], lengths[i], line_content);
+    }
+    
+    // Восстанавливаем позицию в файле
+    lseek(fd, saved_pos, SEEK_SET);
+    
+    printf("\n");
+
     printf("У вас %d секунд чтобы ввести номер строки: ", TIMEOUT);
     fflush(stdout);
 

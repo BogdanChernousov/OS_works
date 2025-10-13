@@ -74,6 +74,34 @@ int main(int argc, char *argv[]){
     }
 
     printf("Файл '%s' содержит %d строк\n", argv[1], line_count);
+
+    // ВЫВОД ТАБЛИЦЫ ОТСТУПОВ С СОДЕРЖАНИЕМ (точно как в прошлых задачах)
+    printf("\n=== ТАБЛИЦА СТРОК ===\n");
+    printf("№ строки | Смещение | Длина | Содержимое\n");
+    printf("---------|----------|-------|------------\n");
+    
+    for (int i = 0; i < line_count; i++)
+    {
+        // Получаем содержимое строки напрямую из памяти
+        char *line_start = file_data + offsets[i];
+        int line_len = lengths[i];
+        
+        // Создаем копию для отображения (убираем \n)
+        char display_line[line_len + 1];
+        strncpy(display_line, line_start, line_len);
+        display_line[line_len] = '\0';
+        
+        // Убираем символ новой строки из отображения
+        if (display_line[line_len - 1] == '\n') {
+            display_line[line_len - 1] = '\0';
+        }
+        
+        printf("%8d | %8ld | %5d | '%s'\n", 
+               i + 1, offsets[i], lengths[i], display_line);
+    }
+    
+    printf("\n");
+
     printf("У вас %d секунд чтобы ввести номер строки: ", TIMEOUT);
     fflush(stdout);
 
