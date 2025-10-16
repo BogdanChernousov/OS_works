@@ -50,28 +50,40 @@ void print_group_proc_id()
 // печать значения ulimit
 void print_u_limit()
 {
-    long limit = ulimit(UL_GETFSIZE);
-    if (limit == -1 && errno != 0)
+    struct rlimit rlim;
+    
+    if (getrlimit(RLIMIT_NPROC, &rlim) == -1)
     {
-        perror("Error while getting ulimit");
+        perror("Error while getting process limit");
     }
     else
     {
-        printf("ulimit is %ld.\n", limit);
+        printf("Max user processes (-u): %ld\n", (long)rlim.rlim_cur);
     }
 }
 
-// установка нового значения ulimit
-void set_u_limit(long new_u_limit)
+// установка нового значения максимального количества процессов
+void set_u_limit(long new_limit)
 {
-    long error = ulimit(UL_SETFSIZE, new_u_limit);
-    if (error == -1 && errno != 0)
+    struct rlimit rlim;
+    
+    // Сначала получаем текущие лимиты
+    if (getrlimit(RLIMIT_NPROC, &rlim) == -1)
     {
-        perror("Error while setting ulimit");
+        perror("Error while getting current process limit");
+        return;
+    }
+    
+    // Устанавливаем новое мягкое ограничение
+    rlim.rlim_cur = new_limit;
+    
+    if (setrlimit(RLIMIT_NPROC, &rlim) == -1)
+    {
+        perror("Error while setting process limit");
     }
     else
     {
-        printf("Success! New ulimit is %ld.\n", new_u_limit);
+        printf("Success! New max user processes: %ld\n", new_limit);
     }
 }
 

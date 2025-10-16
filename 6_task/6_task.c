@@ -90,60 +90,72 @@ int main(int argc, char *argv[]){
     
     printf("\n");
 
-    printf("У вас %d секунд чтобы ввести номер строки: ", TIMEOUT);
+    printf("У вас %d секунд чтобы ввести номер строки\n", TIMEOUT);
     fflush(stdout);
 
     // Используем select для таймаута ввода
     fd_set readfds;
     struct timeval timeout;
-    
+
     FD_ZERO(&readfds);
     FD_SET(STDIN_FILENO, &readfds);
     timeout.tv_sec = TIMEOUT;
     timeout.tv_usec = 0;
 
     int result = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &timeout);
+    int flag = -1;
 
-    if (result > 0)
+    while(1)
     {
-        // Пользователь успел ввести
-        int line_num;
-        if (scanf("%d", &line_num) == 1)
+        if (result > 0)
         {
-            if (line_num == 0)
+            if (flag != -1)
             {
-                printf("Завершение работы\n");
+                printf("Введите номер строки (0 для выхода): ");
             }
-            else if (line_num >= 1 && line_num <= line_count)
+            flag--;
+            // Пользователь успел ввести
+            int line_num;
+            if (scanf("%d", &line_num) == 1)
             {
-                lseek(fd, offsets[line_num - 1], SEEK_SET);
-                char line[lengths[line_num - 1] + 1];
-                read(fd, line, lengths[line_num - 1]);
-                line[lengths[line_num - 1]] = '\0';
-                printf("Строка %d: %s\n", line_num, line);
-            }
-            else
-            {
-                printf("Ошибка: неверный номер строки\n");
+                if (line_num == 0)
+                {
+                    printf("Завершение работы\n");
+                    break;
+                }
+                else if (line_num >= 1 && line_num <= line_count)
+                {
+                    lseek(fd, offsets[line_num - 1], SEEK_SET);
+                    char line[lengths[line_num - 1] + 1];
+                    read(fd, line, lengths[line_num - 1]);
+                    line[lengths[line_num - 1]] = '\0';
+                    printf("Строка %d: %s\n", line_num, line);
+                }
+                else
+                {
+                    printf("Ошибка: неверный номер строки\n");
+                }
             }
         }
-    }
-    else if (result == 0)
-    {
-        // Таймаут - время вышло
-        printf("\nВремя вышло! Вывод всего файла:\n");
-        printf("================================\n");
-        
-        lseek(fd, 0, SEEK_SET);
-        while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0)
+        else if (result == 0)
         {
-            write(STDOUT_FILENO, buffer, bytes_read);
+            // Таймаут - время вышло
+            printf("\nВремя вышло! Вывод всего файла:\n");
+            printf("================================\n");
+                
+            lseek(fd, 0, SEEK_SET);
+            while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0)
+            {
+                write(STDOUT_FILENO, buffer, bytes_read);
+            }
+            printf("\n================================\n");
+            break;
         }
-        printf("\n================================\n");
-    }
-    else
-    {
-        perror("Ошибка select");
+        else
+        {
+            perror("Ошибка select");
+            break;
+        }
     }
 
     close(fd);

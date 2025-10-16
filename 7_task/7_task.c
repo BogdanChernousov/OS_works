@@ -116,42 +116,53 @@ int main(int argc, char *argv[]){
 
     int result = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &timeout);
 
-    if (result > 0)
-    {
-        // Пользователь успел ввести
-        int line_num;
-        if (scanf("%d", &line_num) == 1)
+    int flag = -1;
+    while(1){
+
+        if (result > 0)
         {
-            if (line_num == 0)
+            if (flag != -1)
             {
-                printf("Завершение работы\n");
+                printf("\nВведите номер строки (0 для выхода): ");
             }
-            else if (line_num >= 1 && line_num <= line_count)
+            flag--;
+            // Пользователь успел ввести
+            int line_num;
+            if (scanf("%d", &line_num) == 1)
             {
-                // Выводим строку напрямую из памяти (ЗАМЕНА lseek/read)
-                printf("Строка %d: %.*s\n", line_num, lengths[line_num - 1], file_data + offsets[line_num - 1]);
-            }
-            else
-            {
-                printf("Ошибка: неверный номер строки\n");
+                if (line_num == 0)
+                {
+                    printf("Завершение работы\n");
+                    break;
+                }
+                else if (line_num >= 1 && line_num <= line_count)
+                {
+                    // Выводим строку напрямую из памяти (ЗАМЕНА lseek/read)
+                    printf("Строка %d: %.*s\n", line_num, lengths[line_num - 1], file_data + offsets[line_num - 1]);
+                }
+                else
+                {
+                    printf("Ошибка: неверный номер строки\n");
+                }
             }
         }
+        else if (result == 0)
+        {
+            // Таймаут - время вышло
+            printf("\nВремя вышло! Вывод всего файла:\n");
+            printf("================================\n");
+            
+            // Выводим весь файл из памяти (ЗАМЕНА read/write)
+            fwrite(file_data, 1, file_size, stdout);
+            printf("\n================================\n");
+            break;
+        }
+        else
+        {
+            perror("Ошибка select");
+            break;
+        }
     }
-    else if (result == 0)
-    {
-        // Таймаут - время вышло
-        printf("\nВремя вышло! Вывод всего файла:\n");
-        printf("================================\n");
-        
-        // Выводим весь файл из памяти (ЗАМЕНА read/write)
-        fwrite(file_data, 1, file_size, stdout);
-        printf("\n================================\n");
-    }
-    else
-    {
-        perror("Ошибка select");
-    }
-
     // Освобождаем ресурсы mmap
     munmap(file_data, file_size);
     close(fd);
