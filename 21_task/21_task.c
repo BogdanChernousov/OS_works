@@ -9,8 +9,11 @@ void handle_signal(int sig) {
     if (sig == SIGINT) {
         beep_count++;
         write(STDOUT_FILENO, "\a", 1);  // Звуковой сигнал
+        
+        // ВАЖНО: переустановить обработчик
+        signal(SIGINT, handle_signal);
     } else if (sig == SIGQUIT) {
-        printf("\nВсего звуковых сигналов: %d\n", beep_count);
+        printf("\nПрограмма завершена. Всего звуковых сигналов: %d\n", beep_count);
         exit(0);
     }
 }
@@ -20,7 +23,7 @@ int main() {
     printf("Ctrl+C для звукового сигнала\n");
     printf("Ctrl+\\ для завершения программы\n");
     
-    // Используем signal() вместо sigaction
+    // Установить обработчики
     signal(SIGINT, handle_signal);
     signal(SIGQUIT, handle_signal);
     
