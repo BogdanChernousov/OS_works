@@ -21,6 +21,7 @@ int main() {
         // Код дочернего процесса
         printf("Дочерний процесс: PID = %d, PPID = %d\n", getpid(), getppid());
         printf("---------------textstart---------------\n");
+        fflush(stdout);
         // Исполняем команду cat для текстового файла
         execlp("cat", "cat", "text.txt", NULL);
         
@@ -36,7 +37,7 @@ int main() {
         // Часть 1: Без ожидания
         printf("=== Часть 1: Без ожидания ===\n");
         printf("Родитель: Это сообщение выводится сразу\n");
-        //sleep(1);
+        sleep(1);
         
         // Часть 2: С ожиданием
         printf("\n---------------textend---------------");
@@ -55,13 +56,11 @@ int main() {
         // Анализируем статус завершения
         if (WIFEXITED(status))
         {
-            printf("Родитель: Дочерний процесс %d завершился нормально с кодом: %d\n", 
-                   terminated_pid, WEXITSTATUS(status));
+            printf("Родитель: Дочерний процесс %d завершился нормально с кодом: %d\n", terminated_pid, WEXITSTATUS(status));
         }
         else if (WIFSIGNALED(status))
         {
-            printf("Родитель: Дочерний процесс %d убит сигналом: %d\n", 
-                   terminated_pid, WTERMSIG(status));
+            printf("Родитель: Дочерний процесс %d убит сигналом: %d\n", terminated_pid, WTERMSIG(status));
         }
         
         // Финальное сообщение ПОСЛЕ завершения дочернего процесса
