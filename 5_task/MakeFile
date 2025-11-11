@@ -1,0 +1,3 @@
+all:
+  gcc -std=c99 5_task.c -o tst5
+  ./tst5

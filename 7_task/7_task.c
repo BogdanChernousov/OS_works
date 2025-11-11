@@ -137,13 +137,18 @@ int main(int argc, char *argv[]){
                 }
                 else if (line_num >= 1 && line_num <= line_count)
                 {
-                    // Выводим строку напрямую из памяти (ЗАМЕНА lseek/read)
-                    printf("Строка %d: %.*s\n", line_num, lengths[line_num - 1], file_data + offsets[line_num - 1]);
+                    printf("Строка %d: %.*s", line_num, lengths[line_num - 1], file_data + offsets[line_num - 1]);
                 }
                 else
                 {
                     printf("Ошибка: неверный номер строки\n");
                 }
+            }
+            else
+            {
+            printf("Ошибка: некорректный ввод. Пожалуйста, введите число.\n");
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
             }
         }
         else if (result == 0)

@@ -136,6 +136,12 @@ int main(int argc, char *argv[]){
                     printf("Ошибка: неверный номер строки\n");
                 }
             }
+            else
+            {
+                printf("\nОшибка: некорректный ввод. Пожалуйста, введите число.\n");
+                int c;
+                while ((c = getchar()) != '\n' && c != EOF);
+            }
         }
         else if (result == 0)
         {

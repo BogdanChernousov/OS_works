@@ -1,0 +1,3 @@
+all:
+  gcc -std=c99 7_task.c -o tst7
+  ./tst7

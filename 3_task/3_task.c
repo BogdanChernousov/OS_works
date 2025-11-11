@@ -77,3 +77,15 @@ int main(){
 
 
 // sudo -u test_user /home/bogdan-chernousov/Documents/C_OS/C_Projects/3_task/file_access
+
+// # Добавить выполнение для группы
+// chmod g+x file.txt
+
+// # Добавить выполнение для группы и убрать запись у остальных
+// chmod g+x,o-w file.txt
+
+// # Установить точные права: группа - выполнение, остальные - нет прав
+// chmod g=x,o= file.txt
+
+// # Добавить выполнение всем (владелец, группа, остальные)
+// chmod a+x file.txt
