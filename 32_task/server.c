@@ -51,11 +51,10 @@ void sigint_handler(int sig) {
     exit(0);
 }
 
-// Функция для настройки асинхронного ввода-вывода для сокета
 void setup_async_io(int fd) {
-    // Устанавливаем флаги O_NONBLOCK и O_ASYNC
+    // На Solaris: O_NONBLOCK + FASYNC
     int flags = fcntl(fd, F_GETFL, 0);
-    fcntl(fd, F_SETFL, flags | O_NONBLOCK | O_ASYNC);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK | FASYNC);
     
     // Устанавливаем владельца для получения сигналов
     fcntl(fd, F_SETOWN, getpid());
